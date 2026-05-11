@@ -38,19 +38,19 @@
 // after uploading comment out the line and upload again for normal operation
 //#define FORCE_RESET_FACTORY_DEFAULT_CV
 
-// Un-Comment the line below to include serial commands
+// Comment the line below to remove serial commands and display of messages on console
 #define ENABLE_SERIAL
 
 #ifdef ENABLE_SERIAL
-// **** un-comment ENABLE_SERIAL above to use the following
+// **** un-comment #define ENABLE_SERIAL above to use the following
 
 #define MYSERIAL Serial
 
-// You can print every DCC packet by un-commenting the line below
+// You can print every DCC packet by un-commenting the line below (except for idle and service mode reset)
 //#define NOTIFY_DCC_MSG
 
 // You can print every notifyDccAccTurnoutOutput call-back by un-commenting the line below
-#define NOTIFY_TURNOUT_MSG
+//#define NOTIFY_TURNOUT_MSG
 
 // You can also print other Debug Messages uncommenting the line below
 //#define DEBUG_MSG
@@ -62,23 +62,8 @@
 
 // Un-Comment the lines below to Enable DCC ACK for Service Mode Programming Read CV Capablilty
 
-#ifdef ARDUINO_ARCH_ESP32
-#define ENABLE_DCC_ACK  23  // This is IO23 on ESP32 WROOM
-#else
-#ifdef ARDUINO_AVR_ATmega4809
-#define ENABLE_DCC_ACK  26  // TODO CONFIRM THIS ON PCB LAYOUT
-#else
 #define ENABLE_DCC_ACK  15  // This is A1 on the Iowa Scaled Engineering ARD-DCCSHIELD DCC Shield
-#endif
-#endif
 
-// Un-Comment the line below if this firemware is being used on the RT_Pulse_8_HP_SMT with ATMega328p TQFP-32 board.
-//#ifdef ATmega328P_TQFP32
-//#define ATMEGA328P_SMT_BOARD
-//#endif
-
-// Un-Comment the line below if this firemware is being used on the RT_Pulse_8_HP_KATO with Arduino Nano board.
-//#define KATO_SMT_BOARD
 
 // Un-Comment the line below to use a single output pulse time.
 // The pulse time will be the same for all addresses
@@ -86,11 +71,7 @@
 //#define SINGLE_PULSE
 
 // Define the Arduino input Pin number for the DCC Signal
-#ifdef ARDUINO_ARCH_ESP32
-#define DCC_PIN     22
-#else
 #define DCC_PIN     2
-#endif
 
 #define NUM_TURNOUTS 8                // Set Number of Turnouts (Pairs of Pins)
 #define ACTIVE_OUTPUT_STATE HIGH      // Set the ACTIVE State of the output to Drive the Turnout motor electronics HIGH or LOW
@@ -101,35 +82,19 @@
 
 #define DCC_DECODER_VERSION_NUM 10    // Set the Decoder Version - Used by JMRI to Identify the decoder
 
-
-#ifndef ARDUINO_ARCH_ESP32
-#ifdef ARDUINO_AVR_ATmega4809
-#define LEDCONTROL 39
-#else
 #define LEDCONTROL LED_BUILTIN
-#endif
-#endif
-
-
-
 
 // To set the Turnout Addresses for this board you need to change the CV values for CV1 (CV_ACCESSORY_DECODER_ADDRESS_LSB) and
 // CV9 (CV_ACCESSORY_DECODER_ADDRESS_MSB) in the FactoryDefaultCVs structure below. The Turnout Addresses are defined as:
 // Base Turnout Address is: ((((CV9 * 64) + CV1) - 1) * 4) + 1
 // With NUM_TURNOUTS 8 (above) a CV1 = 1 and CV9 = 0, the Turnout Addresses will be 1..8, for CV1 = 2 the Turnout Address is 5..12
 
-
 #define CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME 2  // CV for the Output Pulse ON ms
 #define CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME 3  // CV for the delay in ms to allow a CDU to recharge
 #define CV_ACCESSORY_DECODER_ACTIVE_STATE      4  // CV to define the ON Output State
 
-#ifdef ARDUINO_AVR_ATmega4809
-#define CV_ACCESSORY_DECODER_SERIAL_LSB 254       // lsb for board serial number  note ATmega4809 has only 256 bytes of eeprom
-#define CV_ACCESSORY_DECODER_SERIAL_MSB 255       // msb for board serial number
-#else
 #define CV_ACCESSORY_DECODER_SERIAL_LSB 255       // lsb for board serial number
 #define CV_ACCESSORY_DECODER_SERIAL_MSB 256       // msb for board serial number
-#endif
 
 #endif
 

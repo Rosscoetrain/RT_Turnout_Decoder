@@ -29,6 +29,7 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
+#include "defines.h"
 
 bool dr (int pin)
  {
@@ -339,6 +340,12 @@ void serialCommandS()
  }
 
 
+void serialCommandD()
+ {
+  MYSERIAL.println(F("Reset factory default CVs"));
+  notifyCVResetFactoryDefault();
+ }
+
 
 void doSerialCommand(String readString)
  {
@@ -445,8 +452,9 @@ if (readString == "<Z>")
 
         if (readString == "<D>")
          {
-          MYSERIAL.println(F("Reset factory default CVs"));
-          notifyCVResetFactoryDefault();
+//          MYSERIAL.println(F("Reset factory default CVs"));
+//          notifyCVResetFactoryDefault();
+          serialCommandD();
          }
 
 /*
@@ -701,13 +709,13 @@ void notifyDccMsg(DCC_MSG *Msg)
    }
 
   #ifdef NOTIFY_DCC_MSG
-  MYMYSERIAL.print("notifyDccMsg: ") ;
-  for(uint8_t i = 0; i < Msg->Size; i++)
-  {
-    MYMYSERIAL.print(Msg->Data[i], HEX);
-    MYMYSERIAL.write(' ');
-  }
-  MYMYSERIAL.println();
+    MYSERIAL.print("notifyDccMsg: ") ;
+    for(uint8_t i = 0; i < Msg->Size; i++)
+     {
+      MYSERIAL.print(Msg->Data[i], HEX);
+      MYSERIAL.write(' ');
+     }
+    MYSERIAL.println();
   #endif
 
 // 1. Service Mode CV Write (Pattern 0x70)
@@ -719,17 +727,26 @@ void notifyDccMsg(DCC_MSG *Msg)
     BaseTurnoutAddress = Dcc.getAddr();
    }
 
-    // 2. POM (Programming on Main)
+// 2. POM (Programming on Main) (Pattern 0xE0)
   if (Msg->Size >= 4)
    {
-    uint16_t msgAddr = ((Msg->Data[0] & 0x3F) | ((Msg->Data[1] & 0x70) << 2)) + 1;
-
-    if (msgAddr == BaseTurnoutAddress)
+    if (Msg->Data[0] == BaseTurnoutAddress)
      {
       if ((Msg->Data[1] & 0xF0) == 0xE0)
        {
-        uint16_t cv = (((Msg->Data[1] & 0x07) << 8) | Msg->Data[2]) + 1;
+        uint16_t cv = ((Msg->Data[1] & 0x03) << 8) | Msg->Data[2] + 1;
         uint8_t val = Msg->Data[3];
+#ifdef NOTIFY_DCC_MSG
+        MYSERIAL.print("CV : ");
+        MYSERIAL.print(cv);
+        MYSERIAL.print(" value : ");
+        MYSERIAL.println(val);
+#endif
+        if ((cv == 8) && (val == 8))
+         {
+          serialCommandD();
+          return;
+         }
         Dcc.setCV(cv, val);
         BaseTurnoutAddress = Dcc.getAddr();
        }
