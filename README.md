@@ -9,9 +9,13 @@ Additions include:
 
 -- programming address via learning mode
 
+-- programming CVs via service mode or POM
+
 
 
 This is a combination of these repos:
+
+https://github.com/Rosscoetrain/DCC-Turnout-Decoder-Direct
 
 
 https://github.com/Rosscoetrain/DCC-Turnout-Decoder-2
@@ -25,6 +29,10 @@ It provides control of up to 8 solenoid turnouts or other solenoid driven device
 
 The hardware that this can be used with is here:
 
-https://github.com/Rosscoetrain/RT-Hardware/tree/master/RT_Pulse_8_decoder
+https://rosscoe.com/shop/index.php?main_page=index&cPath=1
+
+It is used on both the Kato and Dual solenoid decoders.
+
+
 
 
