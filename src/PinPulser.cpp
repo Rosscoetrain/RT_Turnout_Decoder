@@ -1,5 +1,5 @@
 /*
- *  © 2023 Ross Scanlon
+ *  © 2023, 2026 Ross Scanlon
  *
  *  This is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

@@ -43,6 +43,9 @@
 
 #ifdef ENABLE_SERIAL
 // **** un-comment ENABLE_SERIAL above to use the following
+
+#define MYSERIAL Serial
+
 // You can print every DCC packet by un-commenting the line below
 //#define NOTIFY_DCC_MSG
 
@@ -68,9 +71,6 @@
 #define ENABLE_DCC_ACK  15  // This is A1 on the Iowa Scaled Engineering ARD-DCCSHIELD DCC Shield
 #endif
 #endif
-
-// Un-Comment the line below if this firemware is being used on the RT_Pulse_8_HP_SMT with Arduino Nano board.
-//#define NANO_SMT_BOARD
 
 // Un-Comment the line below if this firemware is being used on the RT_Pulse_8_HP_SMT with ATMega328p TQFP-32 board.
 //#ifdef ATmega328P_TQFP32

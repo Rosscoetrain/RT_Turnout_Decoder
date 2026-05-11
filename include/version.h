@@ -23,8 +23,11 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VERSION "1.1.1"
+#define VERSION "1.2.0"
 
+// 1.2.0  - remove ESP32 not going to happen
+//        - general code cleanup
+//        - add POM and service mode CV programming
 // 1.1.1  - add ATmega4809 build this is for future expansion
 // 1.1.0  - add Kato, Rokuhan, Tortoise capability
 // 1.0.2  - add ENABLE_SERIAL define

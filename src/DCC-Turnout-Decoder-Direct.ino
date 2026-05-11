@@ -1,5 +1,5 @@
  /*
- *  © 2023 Ross Scanlon
+ *  © 2023,2026 Ross Scanlon
  *
  *  This is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -170,9 +170,9 @@ void loop()
   if (learningbuttonOldval != learningbuttonVal)
    {
     learningMode = learningbuttonVal;
-#ifndef ARDUINO_ARCH_ESP32
+//#ifndef ARDUINO_ARCH_ESP32
     if (learningMode == HIGH) showAcknowledge(3);
-#endif
+//#endif
 
    }
   learningbuttonOldval = learningbuttonVal;

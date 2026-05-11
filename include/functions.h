@@ -59,7 +59,6 @@ void setVersion() {
  * this is just a function to show via the onboard PCB led, the state of the decoder
  */
 
-#ifndef ARDUINO_ARCH_ESP32
 void showAcknowledge(int nb) {
     for (int i=0;i<nb;i++) {
     digitalWrite(LEDCONTROL, HIGH);   // turn the LED on (HIGH is the voltage level)
@@ -68,7 +67,6 @@ void showAcknowledge(int nb) {
     delay(100);               // wait for a second
   }
 }
-#endif
 
 void showUserCVs()
  {
@@ -159,12 +157,6 @@ if (readString == "<Z>")
 #endif
     Serial.println(F("Set decoder CDU recharge time: <R  mS / 10>"));
  
-//    Serial.print(F("Change decoder address LSB: <W ")); Serial.print(CV_ACCESSORY_DECODER_ADDRESS_LSB); Serial.println(F(" address>"));
-//    Serial.print(F("Change decoder address MSB: <W ")); Serial.print(CV_ACCESSORY_DECODER_ADDRESS_MSB); Serial.println(F(" address>"));
-//    Serial.print(F("Set decoder output pulse time: <W ")); Serial.print(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME); Serial.println(F(" mS / 10>"));
-//    Serial.print(F("Set decoder CDU recharge time: <W ")); Serial.print(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME); Serial.println(F(" mS / 10>"));
-//    Serial.print(F("Set deocder active state: <W ")); Serial.print(CV_ACCESSORY_DECODER_ACTIVE_STATE); Serial.println(F(" 0/1>"));
-
     Serial.println(F("Reset decoder to factory defaulst: <D>"));
     Serial.println(F("Show current CVs: <>"));
     Serial.println(F("Soft Reset: <Z>"));
