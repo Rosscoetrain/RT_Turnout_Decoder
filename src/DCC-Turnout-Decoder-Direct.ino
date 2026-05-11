@@ -57,7 +57,7 @@ void setup()
 
   // Setup which External Interrupt, the Pin it's associated with that we're using and enable the Pull-Up
   // Many Arduino Cores now support the digitalPinToInterrupt() function that makes it easier to figure out the
-  // Interrupt Number for the Arduino Pin number, which reduces confusion. 
+  // Interrupt Number for the Arduino Pin number, which reduces confusion.
 
 #ifdef digitalPinToInterrupt
   Dcc.pin(DCC_PIN, 0);
@@ -109,7 +109,7 @@ void setup()
 #else
   Serial.println("Resetting CVs to Factory Defaults");
 #endif
-  notifyCVResetFactoryDefault(); 
+  notifyCVResetFactoryDefault();
 #endif
 #endif
 
@@ -127,9 +127,9 @@ void loop()
 
   // You MUST call the NmraDcc.process() method frequently from the Arduino loop() function for correct library operation
   Dcc.process();
-  
+
   pinPulser.process();
-  
+
   if( FactoryDefaultCVIndex && Dcc.isSetCVReady())
    {
     FactoryDefaultCVIndex--; // Decrement first as initially it is the size of the array
@@ -141,9 +141,9 @@ void loop()
 #else
     Serial.print("loop: Write Default CV: "); Serial.print(cv,DEC); Serial.print(" Value: "); Serial.println(val,DEC);
 #endif
-#endif     
+#endif
     Dcc.setCV( cv, val );
-    
+
     if( FactoryDefaultCVIndex == 0)	// Is this the last Default CV to set? if so re-initPinPulser
 	    initPinPulser();
    }
@@ -202,11 +202,11 @@ void loop()
   if (readString.length() >0)
    {
     doSerialCommand(readString);
-   } 
+   }
 #endif
 
 }
 
 
 
-  
+

@@ -72,15 +72,15 @@ void showUserCVs()
  {
   for(uint8_t i = 0; i < NUM_TURNOUTS; i++)
    {
-    Serial.print(F("CV"));
-    Serial.print(33 + (i * 2));
-    Serial.print(F(" = "));
-    Serial.print(Dcc.getCV(33 + (i * 2)));
-    Serial.print("    ");
-    Serial.print(F("CV"));
-    Serial.print(34 + (i * 2));
-    Serial.print(F(" = "));
-    Serial.println(Dcc.getCV(34 + (i * 2)));
+    MYSERIAL.print(F("CV"));
+    MYSERIAL.print(33 + (i * 2));
+    MYSERIAL.print(F(" = "));
+    MYSERIAL.print(Dcc.getCV(33 + (i * 2)));
+    MYSERIAL.print("    ");
+    MYSERIAL.print(F("CV"));
+    MYSERIAL.print(34 + (i * 2));
+    MYSERIAL.print(F(" = "));
+    MYSERIAL.println(Dcc.getCV(34 + (i * 2)));
   }
  }
 
@@ -93,229 +93,302 @@ void(* resetFunc) (void) = 0;                     // declare reset function at a
 
 #include "StringSplitter.h"
 
+
+void serialCommandZ()
+ {
+    MYSERIAL.println(F("Resetting"));
+    resetFunc();
+ }
+
+void serialCommandH()   // acutually <?>
+ {
+    MYSERIAL.println(F("Help Text"));
+    MYSERIAL.println(F("Close a turnout: <C address>"));
+    MYSERIAL.println(F("Throw a turnout: <T address>"));
+    MYSERIAL.println(F("Set decoder base address: <A address>"));
+#ifdef SINGLE_PULSE
+    MYSERIAL.println(F("Set decoder output pulse time: <P  mS / 10>"));
+    MYSERIAL.println(F("Set deocder active state: <S  0/1>"));
+#else
+    MYSERIAL.println(F("Set decoder output pulse time: <P output  mS / 10>"));
+    MYSERIAL.println(F("Set decoder active state: <S output 0/1>"));
+    MYSERIAL.println(F("Where output is 1 - 8 as on the decoder pcb"));
+#endif
+    MYSERIAL.println(F("Set decoder CDU recharge time: <R  mS / 10>"));
+    MYSERIAL.println(F("Reset decoder to factory defaulst: <D>"));
+    MYSERIAL.println(F("Show current CVs: <>"));
+    MYSERIAL.println(F("Soft Reset: <Z>"));
+ }
+
+void serialCommandH2()  // actually <>
+ {
+  MYSERIAL.println(F("CVs are:"));
+  MYSERIAL.print(F("CV"));
+  MYSERIAL.print(CV_ACCESSORY_DECODER_ADDRESS_LSB);
+  MYSERIAL.print(F(" = "));
+  MYSERIAL.println(Dcc.getCV(CV_ACCESSORY_DECODER_ADDRESS_LSB));
+  MYSERIAL.print(F("CV"));
+  MYSERIAL.print(CV_ACCESSORY_DECODER_ADDRESS_MSB);
+  MYSERIAL.print(F(" = "));
+  MYSERIAL.println(Dcc.getCV(CV_ACCESSORY_DECODER_ADDRESS_MSB));
+  MYSERIAL.print(F("CV"));
+  MYSERIAL.print(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME);
+  MYSERIAL.print(F(" = "));
+  MYSERIAL.println(Dcc.getCV(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME));
+
+#ifdef SINGLE_PULSE
+  MYSERIAL.print(F("CV"));
+  MYSERIAL.print(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME);
+  MYSERIAL.print(F(" = "));
+  MYSERIAL.println(Dcc.getCV(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME));
+
+  MYSERIAL.print(F("CV"));
+  MYSERIAL.print(CV_ACCESSORY_DECODER_ACTIVE_STATE);
+  MYSERIAL.print(F(" = "));
+  MYSERIAL.println(Dcc.getCV(CV_ACCESSORY_DECODER_ACTIVE_STATE));
+#else
+  showUserCVs();
+#endif
+ }
+
+void serialCommandC()
+ {
+  StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
+  int itemCount = splitter->getItemCount();
+
+  if ( itemCount == 2)
+   {
+    int addr = splitter->getItemAtIndex(1).toInt();
+    notifyDccAccTurnoutOutput( addr, 0, 1 );
+   }
+  else
+   {
+    MYSERIAL.println(F("Invalid command: should be <C address>"));
+   }
+  delete splitter;
+  splitter = NULL;
+ }
+
+void serialCommandT()
+ {
+  StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
+  int itemCount = splitter->getItemCount();
+
+  if ( itemCount == 2)
+   {
+    int addr = splitter->getItemAtIndex(1).toInt();
+    notifyDccAccTurnoutOutput( addr, 1, 1 );
+   }
+  else
+   {
+    MYSERIAL.println(F("Invalid command: should be <T address>"));
+   }
+  delete splitter;
+  splitter = NULL;
+ }
+
+void serialCommandA()
+ {
+  StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
+  int itemCount = splitter->getItemCount();
+
+  if ( itemCount == 2)
+   {
+    int addr = splitter->getItemAtIndex(1).toInt();
+
+    byte L = (addr + 3) / 4;
+    byte H = (addr + 3) / 1024;
+
+#ifdef DEBUG_MSG
+    MYSERIAL.print(F("Value = ")); MYSERIAL.println(addr);
+    MYSERIAL.print(F(" H = ")); MYSERIAL.println(H);
+    MYSERIAL.print(F(" L = ")); MYSERIAL.println(L);
+#endif
+
+    Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_MSB, H);
+    Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_LSB, L);
+   }
+  else
+   {
+    MYSERIAL.println(F("Invalid command: should be <A address>"));
+   }
+  delete splitter;
+  splitter = NULL;
+ }
+
+void serialCommandP()
+ {
+  StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
+  int itemCount = splitter->getItemCount();
+
+#ifdef SINGLE_PULSE
+  if ( itemCount == 2)
+   {
+    int value = splitter->getItemAtIndex(1).toInt();
+  #ifdef DEBUG_MSG
+    MYSERIAL.print(F("Value = ")); MYSERIAL.println(value);
+  #endif
+    Dcc.setCV(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME, value);
+   }
+  else
+   {
+    MYSERIAL.println(F("Invalid command: should be <P ms/10>"));
+   }
+  delete splitter;
+  splitter = NULL;
+#else
+  if ( itemCount == 3)
+   {
+    int addr = splitter->getItemAtIndex(1).toInt();
+    int value = splitter->getItemAtIndex(2).toInt();
+
+  #ifdef DEBUG_MSG
+    MYSERIAL.print(F("Adress = ")); MYSERIAL.println(addr);
+    MYSERIAL.print(F("Value = ")); MYSERIAL.println(value);
+  #endif
+    if ( addr >= 1 && addr <= 8 )
+     {
+      Dcc.setCV(33 + (addr - 1) * 2, value);
+     }
+    else
+     {
+      MYSERIAL.println(F("Invalid output: should be 1 to 8"));
+     }
+   }
+  else
+   {
+    MYSERIAL.println(F("Invalid command: should be <P output ms/10>"));
+   }
+  delete splitter;
+  splitter = NULL;
+#endif
+ }
+
+
+void serialCommandR()
+ {
+  StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
+  int itemCount = splitter->getItemCount();
+
+  if ( itemCount == 2)
+   {
+    int addr = splitter->getItemAtIndex(1).toInt();
+
+#ifdef DEBUG_MSG
+    MYSERIAL.print(F("Value = ")); MYSERIAL.println(addr);
+#endif
+
+    Dcc.setCV(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME, addr);
+   }
+  else
+   {
+    MYSERIAL.println(F("Invalid command: should be <R ms/10>"));
+   }
+  delete splitter;
+  splitter = NULL;
+ }
+
+void serialCommandS()
+ {
+  StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
+  int itemCount = splitter->getItemCount();
+
+#ifdef SINGLE_PULSE
+  if (itemCount == 2)
+   {
+    int value = splitter->getItemAtIndex(1).toInt();
+
+  #ifdef DEBUG_MSG
+    MYSERIAL.print(F("Value = ")); MYSERIAL.println(value);
+  #endif
+    if ( value == 0 || value == 1 )
+     {
+      Dcc.setCV(CV_ACCESSORY_DECODER_ACTIVE_STATE, value);
+     }
+    else
+     {
+      MYSERIAL.println(F("Invalid value: state should be 0 or 1"));
+     }
+   }
+  else
+   {
+    MYSERIAL.println(F("Invalid command: should be <S 0> or <S 1>"));
+   }
+  delete splitter;
+  splitter = NULL;
+#else
+  if (itemCount == 3)
+   {
+    int addr = splitter->getItemAtIndex(1).toInt();
+    int value = splitter->getItemAtIndex(2).toInt();
+
+  #ifdef DEBUG_MSG
+    MYSERIAL.print(F("Address = ")); MYSERIAL.println(addr);
+    MYSERIAL.print(F("Value = ")); MYSERIAL.println(value);
+  #endif
+
+    Dcc.setCV(34 + (addr - 1) * 2, value);
+   }
+  else
+   {
+    MYSERIAL.println(F("Invalid command: should be <S address 0> or <S address 1>"));
+   }
+  delete splitter;
+  splitter = NULL;
+#endif
+ }
+
+
+
 void doSerialCommand(String readString)
  {
-//  byte p = 0;
-
   readString.trim();
+  readString.toUpperCase();
 
-#ifdef ARDUINO_AVR_ATmega4809
-    Serial3.println(readString);                    // so you can see the captured string
-#else
-    Serial.println(readString);                    // so you can see the captured string
-#endif
+  MYSERIAL.println(readString);                    // so you can see the captured string
 
 if (readString == "<Z>")
    {
-
-#ifdef ARDUINO_AVR_ATmega4809
-    Serial3.println(F("Resetting"));
-#else
-    Serial.println(F("Resetting"));
-#endif
-
-    resetFunc();
+    serialCommandZ();
    }
 
   if (readString == "<?>")
    {
-#ifdef ARDUINO_AVR_ATmega4809
-    Serial3.println(F("Help Text"));
-    Serial3.println(F("Close a turnout: <C address>"));
-    Serial3.println(F("Throw a turnout: <T address>"));
-    Serial3.println(F("Set decoder base address: <A address>"));
-#ifdef SINGLE_PULSE
-    Serial3.println(F("Set decoder output pulse time: <P  mS / 10>"));
-    Serial3.println(F("Set deocder active state: <S  0/1>"));
-#else
-    Serial3.println(F("Set decoder output pulse time: <P output  mS / 10>"));
-    Serial3.println(F("Set decoder active state: <S output 0/1>"));
-    Serial3.println(F("Where output is 1 - 8 as on the decoder pcb"));
-#endif
-    Serial3.println(F("Set decoder CDU recharge time: <R  mS / 10>"));
-
-//    Serial3.print(F("Change decoder address LSB: <W ")); Serial.print(CV_ACCESSORY_DECODER_ADDRESS_LSB); Serial.println(F(" address>"));
-//    Serial3.print(F("Change decoder address MSB: <W ")); Serial.print(CV_ACCESSORY_DECODER_ADDRESS_MSB); Serial.println(F(" address>"));
-//    Serial3.print(F("Set decoder output pulse time: <W ")); Serial.print(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME); Serial.println(F(" mS / 10>"));
-//    Serial3.print(F("Set decoder CDU recharge time: <W ")); Serial.print(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME); Serial.println(F(" mS / 10>"));
-//    Serial3.print(F("Set deocder active state: <W ")); Serial.print(CV_ACCESSORY_DECODER_ACTIVE_STATE); Serial.println(F(" 0/1>"));
-    Serial3.println(F("Reset decoder to factory defaulst: <D>"));
-    Serial3.println(F("Show current CVs: <>"));
-    Serial3.println(F("Soft Reset: <Z>"));
-#else
-    Serial.println(F("Help Text"));
-    Serial.println(F("Close a turnout: <C address>"));
-    Serial.println(F("Throw a turnout: <T address>"));
-    Serial.println(F("Set decoder base address: <A address>"));
-#ifdef SINGLE_PULSE
-    Serial.println(F("Set decoder output pulse time: <P  mS / 10>"));
-    Serial.println(F("Set deocder active state: <S  0/1>"));
-#else
-    Serial.println(F("Set decoder output pulse time: <P output  mS / 10>"));
-    Serial.println(F("Set decoder active state: <S output 0/1>"));
-    Serial.println(F("Where output is 1 - 8 as on the decoder pcb"));
-#endif
-    Serial.println(F("Set decoder CDU recharge time: <R  mS / 10>"));
- 
-    Serial.println(F("Reset decoder to factory defaulst: <D>"));
-    Serial.println(F("Show current CVs: <>"));
-    Serial.println(F("Soft Reset: <Z>"));
-#endif
+    serialCommandH();
    }
   else
    {
     if (readString.startsWith("<>"))
      {
-#ifdef ARDUINO_AVR_ATmega4809
-      Serial3.println(F("CVs are:"));
-      Serial3.print(F("CV"));
-      Serial3.print(CV_ACCESSORY_DECODER_ADDRESS_LSB);
-      Serial3.print(F(" = "));
-      Serial3.println(Dcc.getCV(CV_ACCESSORY_DECODER_ADDRESS_LSB));
-      Serial3.print(F("CV"));
-      Serial3.print(CV_ACCESSORY_DECODER_ADDRESS_MSB);
-      Serial3.print(F(" = "));
-      Serial3.println(Dcc.getCV(CV_ACCESSORY_DECODER_ADDRESS_MSB));
-      Serial3.print(F("CV"));
-      Serial3.print(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME);
-      Serial3.print(F(" = "));
-      Serial3.println(Dcc.getCV(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME));
-
-#ifdef SINGLE_PULSE
-      Serial3.print(F("CV"));
-      Serial3.print(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME);
-      Serial3.print(F(" = "));
-      Serial3.println(Dcc.getCV(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME));
-
-      Serial3.print(F("CV"));
-      Serial3.print(CV_ACCESSORY_DECODER_ACTIVE_STATE);
-      Serial3.print(F(" = "));
-      Serial3.println(Dcc.getCV(CV_ACCESSORY_DECODER_ACTIVE_STATE));
-#else
-      for(uint8_t i = 0; i < NUM_TURNOUTS; i++)
-       {
-        Serial3.print(F("CV"));
-        Serial3.print(33 + (i * 2));
-        Serial3.print(F(" = "));
-        Serial3.println(Dcc.getCV(33 + (i * 2)));
-
-        Serial3.print(F("CV"));
-        Serial3.print(34 + (i * 2));
-        Serial3.print(F(" = "));
-        Serial3.println(Dcc.getCV(34 + (i * 2)));
-       }
-#endif
-#else
-      Serial.println(F("CVs are:"));
-      Serial.print(F("CV"));
-      Serial.print(CV_ACCESSORY_DECODER_ADDRESS_LSB);
-      Serial.print(F(" = "));
-      Serial.println(Dcc.getCV(CV_ACCESSORY_DECODER_ADDRESS_LSB));
-      Serial.print(F("CV"));
-      Serial.print(CV_ACCESSORY_DECODER_ADDRESS_MSB);
-      Serial.print(F(" = "));
-      Serial.println(Dcc.getCV(CV_ACCESSORY_DECODER_ADDRESS_MSB));
-      Serial.print(F("CV"));
-      Serial.print(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME);
-      Serial.print(F(" = "));
-      Serial.println(Dcc.getCV(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME));
-
-#ifdef SINGLE_PULSE
-      Serial.print(F("CV"));
-      Serial.print(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME);
-      Serial.print(F(" = "));
-      Serial.println(Dcc.getCV(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME));
-
-      Serial.print(F("CV"));
-      Serial.print(CV_ACCESSORY_DECODER_ACTIVE_STATE);
-      Serial.print(F(" = "));
-      Serial.println(Dcc.getCV(CV_ACCESSORY_DECODER_ACTIVE_STATE));
-#else
-      showUserCVs();
-
-/*
-      for(uint8_t i = 0; i < NUM_TURNOUTS; i++)
-       {
-        Serial.print(F("CV"));
-        Serial.print(33 + (i * 2));
-        Serial.print(F(" = "));
-        Serial.print(Dcc.getCV(33 + (i * 2)));
-        Serial.print("    ");
-        Serial.print(F("CV"));
-        Serial.print(34 + (i * 2));
-        Serial.print(F(" = "));
-        Serial.println(Dcc.getCV(34 + (i * 2)));
-       }
-*/
-#endif
-#endif
-
+      serialCommandH2();
      }
     else
      {
       if (readString.startsWith("<"))
        {
-//        int pos = 0;
         // this is where commands are completed
 
         // command to close turnout <C address>
-
         if (readString.startsWith("<C"))
          {
-          StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
-          int itemCount = splitter->getItemCount();
-
-
-          if ( itemCount == 2)
-           {
-            int addr = splitter->getItemAtIndex(1).toInt();
-            notifyDccAccTurnoutOutput( addr, 0, 1 );
-           }
-          else
-           {
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.println(F("Invalid command: should be <C address>"));
-#else
-            Serial.println(F("Invalid command: should be <C address>"));
-#endif
-           }
-          delete splitter;
-          splitter = NULL;
+          serialCommandC();
          }
 
-
+        // show only the user CVs
         if (readString.startsWith("<U"))
          {
           showUserCVs();
          }
 
          // command to throw turnout <T address>
-
         if (readString.startsWith("<T"))
          {
-          StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
-          int itemCount = splitter->getItemCount();
-
-          if ( itemCount == 2)
-           {
-            int addr = splitter->getItemAtIndex(1).toInt();
-            notifyDccAccTurnoutOutput( addr, 1, 1 );
-           }
-          else
-           {
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.println(F("Invalid command: should be <T address>"));
-#else
-            Serial.println(F("Invalid command: should be <T address>"));
-#endif
-           }
-          delete splitter;
-          splitter = NULL;
+          serialCommandT();
          }
 
         if (readString.startsWith("<A>"))
          {
-          Serial.println(BaseTurnoutAddress);
+          MYSERIAL.println(BaseTurnoutAddress);
           readString = "";
          }
 
@@ -326,122 +399,19 @@ if (readString == "<Z>")
 
         if (readString.startsWith("<A"))
          {
-          StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
-          int itemCount = splitter->getItemCount();
-
-          if ( itemCount == 2)
-           {
-            int addr = splitter->getItemAtIndex(1).toInt();
-
-            byte L = (addr + 3) / 4;
-            byte H = (addr + 3) / 1024;
-
-#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.print(F("Value = ")); Serial.println(addr);
-            Serial3.print(F(" H = ")); Serial.println(H);
-            Serial3.print(F(" L = ")); Serial.println(L);
-#else
-            Serial.print(F("Value = ")); Serial.println(addr);
-            Serial.print(F(" H = ")); Serial.println(H);
-            Serial.print(F(" L = ")); Serial.println(L);
-#endif
-#endif
-                  
-            Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_MSB, H);
-            Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_LSB, L);
-           }
-          else
-           {
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.println(F("Invalid command: should be <A address>"));
-#else
-            Serial.println(F("Invalid command: should be <A address>"));
-#endif
-           }
-          delete splitter;
-          splitter = NULL;
+          serialCommandA();
          }
 
 /*
  * command to set output pulse time.
  * The value here is the number of milliseconds / 10
  * ie 100ms/10 = 10.
- * 
+ *
  */
-
         if (readString.startsWith("<P"))
          {
-          StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
-          int itemCount = splitter->getItemCount();
-
-
-#ifdef SINGLE_PULSE
-          if ( itemCount == 2)
-           {
-            int value = splitter->getItemAtIndex(1).toInt();
-
-#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.print(F("Value = ")); Serial.println(value);
-#else
-            Serial.print(F("Value = ")); Serial.println(value);
-#endif
-#endif
-      
-            Dcc.setCV(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME, value);
-           }
-          else
-           {
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.println(F("Invalid command: should be <P ms/10>"));
-#else
-            Serial.println(F("Invalid command: should be <P ms/10>"));
-#endif
-           }
-          delete splitter;
-          splitter = NULL;
+          serialCommandP();
          }
-#else
-          if ( itemCount == 3)
-           {
-            int addr = splitter->getItemAtIndex(1).toInt();
-            int value = splitter->getItemAtIndex(2).toInt();
-
-#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.print(F("Adress = ")); Serial.println(addr);
-            Serial3.print(F("Value = ")); Serial.println(value);
-#else
-            Serial.print(F("Adress = ")); Serial.println(addr);
-            Serial.print(F("Value = ")); Serial.println(value);
-#endif
-#endif
-            if ( addr >= 1 && addr <= 8 )
-             {
-              Dcc.setCV(33 + (addr - 1) * 2, value);
-             }
-            else
-             {
-#ifdef ARDUINO_AVR_ATmega4809
-              Serial3.println(F("Invalid output: should be 1 to 8"));
-#else
-              Serial.println(F("Invalid output: should be 1 to 8"));
-#endif
-             }
-           }
-          else
-           {
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.println(F("Invalid command: should be <P output ms/10>"));
-#else
-            Serial.println(F("Invalid command: should be <P output ms/10>"));
-#endif
-           }
-          delete splitter;
-          splitter = NULL;
-         }
-#endif
 
 /*
  * delay time for the CDU to recharge
@@ -451,33 +421,7 @@ if (readString == "<Z>")
 
         if (readString.startsWith("<R"))
          {
-          StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
-          int itemCount = splitter->getItemCount();
-
-          if ( itemCount == 2)
-           {
-            int addr = splitter->getItemAtIndex(1).toInt();
-
-#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.print(F("Value = ")); Serial.println(addr);
-#else
-            Serial.print(F("Value = ")); Serial.println(addr);
-#endif
-#endif
-
-            Dcc.setCV(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME, addr);
-           }
-          else
-           {
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.println(F("Invalid command: should be <R ms/10>"));
-#else
-            Serial.println(F("Invalid command: should be <R ms/10>"));
-#endif
-           }
-          delete splitter;
-          splitter = NULL;
+          serialCommandR();
          }
 
 /*
@@ -488,105 +432,24 @@ if (readString == "<Z>")
 
         if (readString.startsWith("<S"))
          {
-          StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
-          int itemCount = splitter->getItemCount();
-
-#ifdef SINGLE_PULSE
-          if (itemCount == 2)
-           {
-            int value = splitter->getItemAtIndex(1).toInt();
-
-#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.print(F("Value = ")); Serial.println(value);
-#else
-            Serial.print(F("Value = ")); Serial.println(value);
-#endif
-#endif
-
-            if ( value == 0 || value == 1 )
-             {
-              Dcc.setCV(CV_ACCESSORY_DECODER_ACTIVE_STATE, value);
-             }
-            else
-             {
-#ifdef ARDUINO_AVR_ATmega4809
-              Serial3.println(F("Invalid value: state should be 0 or 1"));
-#else
-              Serial.println(F("Invalid value: state should be 0 or 1"));
-#endif
-             }
-           }
-          else
-           {
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.println(F("Invalid command: should be <S 0> or <S 1>"));
-#else
-            Serial.println(F("Invalid command: should be <S 0> or <S 1>"));
-#endif
-           }
-          delete splitter;
-          splitter = NULL;
+          serialCommandS();
          }
-#else
-          if (itemCount == 3)
-           {
-            int addr = splitter->getItemAtIndex(1).toInt();
-            int value = splitter->getItemAtIndex(2).toInt();
 
-#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.print(F("Address = ")); Serial.println(addr);
-            Serial3.print(F("Value = ")); Serial.println(value);
-#else
-            Serial.print(F("Address = ")); Serial.println(addr);
-            Serial.print(F("Value = ")); Serial.println(value);
-#endif
-#endif
-
-            Dcc.setCV(34 + (addr - 1) * 2, value);
-           }
-          else
-           {
-#ifdef ARDUINO_AVR_ATmega4809
-            Serial3.println(F("Invalid command: should be <S address 0> or <S address 1>"));
-#else
-            Serial.println(F("Invalid command: should be <S address 0> or <S address 1>"));
-#endif
-           }
-          delete splitter;
-          splitter = NULL;
+        if (readString.startsWith("<X"))
+         {
+          MYSERIAL.println(F("Serial number is:"));
+          MYSERIAL.println(Dcc.getCV(CV_ACCESSORY_DECODER_SERIAL_LSB) + (Dcc.getCV(CV_ACCESSORY_DECODER_SERIAL_MSB) * 256 ));
+          MYSERIAL.println("");
          }
-#endif
 
 
+        if (readString == "<D>")
+         {
+          MYSERIAL.println(F("Reset factory default CVs"));
+          notifyCVResetFactoryDefault();
+         }
 
-    if (readString.startsWith("<X"))
-     {
-#ifdef ARDUINO_AVR_ATmega4809
-      Serial3.println(F("Serial number is:"));
-      Serial3.println(Dcc.getCV(CV_ACCESSORY_DECODER_SERIAL_LSB) + (Dcc.getCV(CV_ACCESSORY_DECODER_SERIAL_MSB) * 256 ));
-      Serial3.println("");
-#else
-      Serial.println(F("Serial number is:"));
-      Serial.println(Dcc.getCV(CV_ACCESSORY_DECODER_SERIAL_LSB) + (Dcc.getCV(CV_ACCESSORY_DECODER_SERIAL_MSB) * 256 ));
-      Serial.println("");
-#endif
-     }
-
-
-    if (readString == "<D>")
-     {
-  #ifdef ARDUINO_AVR_ATmega4809
-          Serial3.println(F("Reset factory default CVs"));
-  #else
-          Serial.println(F("Reset factory default CVs"));
-  #endif
-  
-      notifyCVResetFactoryDefault();
-     }
-
-/*              
+/*
         if (readString.startsWith("<W"))
          {
           StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
@@ -604,11 +467,11 @@ if (readString == "<Z>")
                     byte H = (value + 3) / 1024;
 
 #ifdef DEBUG_MSG
-                  Serial.print(F("Value = ")); Serial.println(value);
-                  Serial.print(F(" H = ")); Serial.println(H);
-                  Serial.print(F(" L = ")); Serial.println(L);
+                  MYSERIAL.print(F("Value = ")); MYSERIAL.println(value);
+                  MYSERIAL.print(F(" H = ")); MYSERIAL.println(H);
+                  MYSERIAL.print(F(" L = ")); MYSERIAL.println(L);
 #endif
-                  
+
                   Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_MSB, H);
                   Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_LSB, L);
               break;
@@ -640,31 +503,26 @@ if (readString == "<Z>")
                  }
                 else
                  {
-                  Serial.println(F("Value must be 0 (LOW) or 1 (HIGH)"));
+                  MYSERIAL.println(F("Value must be 0 (LOW) or 1 (HIGH)"));
                  }
               break;
               default:
-                 Serial.println(F("Invalid cv number: should be <W cv value> "));
+                 MYSERIAL.println(F("Invalid cv number: should be <W cv value> "));
               break;
              }
            }
           else
            {
-            Serial.println(F("Invalid command: should be <W cv value>"));
+            MYSERIAL.println(F("Invalid command: should be <W cv value>"));
            }
           delete splitter;
           splitter = NULL;
          }
 */
-
        }
       else
        {
-#ifdef ARDUINO_AVR_ATmega4809
-        Serial3.println(F("ERROR: Unknown command"));
-#else
-        Serial.println(F("ERROR: Unknown command"));
-#endif
+        MYSERIAL.println(F("ERROR: Unknown command"));
        }
      }
    }
@@ -683,82 +541,55 @@ void initPinPulser(void)
   onMs              = Dcc.getCV(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME) * 10;
   activeOutputState = Dcc.getCV(CV_ACCESSORY_DECODER_ACTIVE_STATE);
 #else
-//  uint16_t onMs[NUM_TURNOUTS] = {};
-//  uint8_t activeOutputState[NUM_TURNOUTS] = {};
 // read the CV's for each address
   for(uint8_t i = 0; i < NUM_TURNOUTS; i++)
   {
     onMs[i] = Dcc.getCV( 33 + ( i * 2 ) ) * 10;
     activeOutputState[i]  = Dcc.getCV( 34 + ( i * 2 ) );
-#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-    Serial3.print(F(" i : "));
-    Serial3.print(i);
-    Serial3.print(F(" onMs : "));
-    Serial3.print(onMs[i]);
-    Serial3.print(F(" activeOutputState : "));
-    Serial3.println(activeOutputState[i]);
-#else
-    Serial.print(F(" i : "));
-    Serial.print(i);
-    Serial.print(F(" onMs : "));
-    Serial.print(onMs[i]);
-    Serial.print(F(" activeOutputState : "));
-    Serial.println(activeOutputState[i]);
-#endif
-#endif
-
+  #ifdef DEBUG_MSG
+    MYSERIAL.print(F(" i : "));
+    MYSERIAL.print(i);
+    MYSERIAL.print(F(" onMs : "));
+    MYSERIAL.print(onMs[i]);
+    MYSERIAL.print(F(" activeOutputState : "));
+    MYSERIAL.println(activeOutputState[i]);
+  #endif
   }
 #endif
 
 #ifdef ENABLE_SERIAL
 //#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-  Serial3.print(F("initPinPulser: DCC Turnout Base Address: "));
-  Serial3.print(BaseTurnoutAddress, DEC);
-  Serial3.print(F(" CDU Recharge: "));
-  Serial3.println(cduRechargeMs);
-#else
-  Serial.print(F("initPinPulser: DCC Turnout Base Address: "));
-  Serial.print(BaseTurnoutAddress, DEC);
-  Serial.print(F(" CDU Recharge: "));
-  Serial.println(cduRechargeMs);
+  MYSERIAL.print(F("initPinPulser: DCC Turnout Base Address: "));
+  MYSERIAL.print(BaseTurnoutAddress, DEC);
+  MYSERIAL.print(F(" CDU Recharge: "));
+  MYSERIAL.println(cduRechargeMs);
 #endif
 #ifdef SINGLE_PULSE
-#ifdef ARDUINO_AVR_ATmega4809
-  Serial3.print(F(" Active Pulse: "));
-  Serial3.print(onMs);
-  Serial3.print(F("ms Active Output State: "));
-  Serial3.println(activeOutputState ? "HIGH" : "LOW" );
-#else
-  Serial.print(F(" Active Pulse: ")); Serial.print(onMs);  
-  Serial.print(F("ms Active Output State: ")); Serial.println(activeOutputState ? "HIGH" : "LOW" );
-#endif
-#endif
+  MYSERIAL.print(F(" Active Pulse: ")); MYSERIAL.print(onMs); 
+  MYSERIAL.print(F("ms Active Output State: ")); MYSERIAL.println(activeOutputState ? "HIGH" : "LOW" );
 #endif
 
   // Step through all the Turnout Driver pins setting them to OUTPUT and NOT Active State
   for(uint8_t i = 0; i < (NUM_TURNOUTS * 2); i++)
   {
 #ifdef SINGLE_PULSE
-  	digitalWrite(outputs[i], !activeOutputState); // Set the Output Inactive before the direction so the 
+  	digitalWrite(outputs[i], !activeOutputState); // Set the Output Inactive before the direction so the
 #else
-    digitalWrite(outputs[i], !activeOutputState[i / 2]); // Set the Output Inactive before the direction so the 
+    digitalWrite(outputs[i], !activeOutputState[i / 2]); // Set the Output Inactive before the direction so the
 #endif
   	pinMode( outputs[i], OUTPUT );                // Pin doesn't momentarily pulse the wrong state
 	}
 
-  // Init the PinPulser with the new settings 
+  // Init the PinPulser with the new settings
 #ifdef SINGLE_PULSE
   pinPulser.init(onMs, cduRechargeMs, activeOutputState);
 #else
   pinPulser.init(onMs, cduRechargeMs, activeOutputState, outputs);
 
   pinPulser.printArrays();
-
 #endif
 }
- 
+
 
 /*
  *  DCC functions
@@ -769,21 +600,12 @@ void initPinPulser(void)
 void notifyDccAccTurnoutOutput( uint16_t Addr, uint8_t Direction, uint8_t OutputPower )
  {
 #ifdef  NOTIFY_TURNOUT_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-  Serial3.print("notifyDccAccTurnoutOutput: Turnout: ") ;
-  Serial3.print(Addr,DEC) ;
-  Serial3.print(" Direction: ");
-  Serial3.print(Direction ? "Thrown" : "Closed") ;
-  Serial3.print(" Output: ");
-  Serial3.print(OutputPower ? "On" : "Off") ;
-#else
-  Serial.print("notifyDccAccTurnoutOutput: Turnout: ") ;
-  Serial.print(Addr,DEC) ;
-  Serial.print(" Direction: ");
-  Serial.print(Direction ? "Thrown" : "Closed") ;
-  Serial.print(" Output: ");
-  Serial.print(OutputPower ? "On" : "Off") ;
-#endif
+  MYSERIAL.print("notifyDccAccTurnoutOutput: Turnout: ") ;
+  MYSERIAL.print(Addr,DEC) ;
+  MYSERIAL.print(" Direction: ");
+  MYSERIAL.print(Direction ? "Thrown" : "Closed") ;
+  MYSERIAL.print(" Output: ");
+  MYSERIAL.print(OutputPower ? "On" : "Off") ;
 #endif
 
 // check to see if in learning mode and update address
@@ -796,23 +618,14 @@ void notifyDccAccTurnoutOutput( uint16_t Addr, uint8_t Direction, uint8_t Output
     byte L = (Addr + 3) / 4;
     byte H = (Addr + 3) / 1024;
 
-#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-    Serial3.println("");
-    Serial3.print(F("Value = ")); Serial.println(Addr,DEC);
-    Serial3.print(F(" H = ")); Serial.println(H,DEC);
-    Serial3.print(F(" L = ")); Serial.println(L,DEC);
-#else
-    Serial.println("");
-    Serial.print(F("Value = ")); Serial.println(Addr,DEC);
-    Serial.print(F(" H = ")); Serial.println(H,DEC);
-    Serial.print(F(" L = ")); Serial.println(L,DEC);
-#endif
-#endif
-
+  #ifdef DEBUG_MSG
+    MYSERIAL.println("");
+    MYSERIAL.print(F("Value = ")); MYSERIAL.println(Addr,DEC);
+    MYSERIAL.print(F(" H = ")); MYSERIAL.println(H,DEC);
+    MYSERIAL.print(F(" L = ")); MYSERIAL.println(L,DEC);
+  #endif
     Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_MSB, H);
     Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_LSB, L);
-
    }
   else
 #endif
@@ -823,26 +636,15 @@ void notifyDccAccTurnoutOutput( uint16_t Addr, uint8_t Direction, uint8_t Output
       uint16_t pinIndex = ( (Addr - BaseTurnoutAddress) << 1 ) + Direction ;
       pinPulser.addPin(outputs[pinIndex]);
 #ifdef  NOTIFY_TURNOUT_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-      Serial3.print(" Pin Index: ");
-      Serial3.print(pinIndex,DEC);
-      Serial3.print(" Pin: ");
-      Serial3.print(outputs[pinIndex],DEC);
-#else
-      Serial.print(" Pin Index: ");
-      Serial.print(pinIndex,DEC);
-      Serial.print(" Pin: ");
-      Serial.print(outputs[pinIndex],DEC);
-#endif
+      MYSERIAL.print(" Pin Index: ");
+      MYSERIAL.print(pinIndex,DEC);
+      MYSERIAL.print(" Pin: ");
+      MYSERIAL.print(outputs[pinIndex],DEC);
 #endif
      }
    }
 #ifdef  NOTIFY_TURNOUT_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-  Serial3.println();
-#else
-  Serial.println();
-#endif
+  MYSERIAL.println();
 #endif
  }
 
@@ -850,17 +652,10 @@ void notifyDccAccTurnoutOutput( uint16_t Addr, uint8_t Direction, uint8_t Output
 void notifyCVChange(uint16_t CV, uint8_t Value)
  {
 #ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-  Serial3.print("notifyCVChange: CV: ") ;
-  Serial3.print(CV,DEC) ;
-  Serial3.print(" Value: ") ;
-  Serial3.println(Value, DEC) ;
-#else
-  Serial.print("notifyCVChange: CV: ") ;
-  Serial.print(CV,DEC) ;
-  Serial.print(" Value: ") ;
-  Serial.println(Value, DEC) ;
-#endif  
+  MYSERIAL.print("notifyCVChange: CV: ") ;
+  MYSERIAL.print(CV,DEC) ;
+  MYSERIAL.print(" Value: ") ;
+  MYSERIAL.println(Value, DEC) ;
 #endif
 
   Value = Value;  // Silence Compiler Warnings...
@@ -872,26 +667,21 @@ void notifyCVChange(uint16_t CV, uint8_t Value)
 
 void notifyCVResetFactoryDefault()
 {
-  // Make FactoryDefaultCVIndex non-zero and equal to num CV's to be reset 
+  // Make FactoryDefaultCVIndex non-zero and equal to num CV's to be reset
   // to flag to the loop() function that a reset to Factory Defaults needs to be done
   FactoryDefaultCVIndex = sizeof(FactoryDefaultCVs)/sizeof(CVPair);
 };
 
 // This function is called by the NmraDcc library when a DCC ACK needs to be sent
-// Calling this function should cause an increased 60ma current drain on the power supply for 6ms to ACK a CV Read 
+// Calling this function should cause an increased 60ma current drain on the power supply for 6ms to ACK a CV Read
 #ifdef  ENABLE_DCC_ACK
 void notifyCVAck(void)
  {
-#ifdef DEBUG_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-  Serial3.println("notifyCVAck") ;
-#else
-  Serial.println("notifyCVAck") ;
-#endif
-#endif
+  #ifdef DEBUG_MSG
+  MYSERIAL.println("notifyCVAck") ;
+  #endif
   // Configure the DCC CV Programing ACK pin for an output
   pinMode( ENABLE_DCC_ACK, OUTPUT );
-
   // Generate the DCC ACK 60mA pulse
   digitalWrite( ENABLE_DCC_ACK, HIGH );
   delay( 10 );  // The DCC Spec says 6ms but 10 makes sure... ;)
@@ -899,30 +689,53 @@ void notifyCVAck(void)
  }
 #endif
 
-#ifdef  NOTIFY_DCC_MSG
-#ifdef ARDUINO_AVR_ATmega4809
-void notifyDccMsg( DCC_MSG * Msg)
+
+
+void notifyDccMsg(DCC_MSG *Msg)
  {
-  Serial3.print("notifyDccMsg: ") ;
+// ignore idle messages and service mode reset
+
+  if (Msg->Data[0] == 0xFF || Msg->Data[0] == 0x7F || Msg->Data[0] == 0x00)
+   {
+    return;
+   }
+
+  #ifdef NOTIFY_DCC_MSG
+  MYMYSERIAL.print("notifyDccMsg: ") ;
   for(uint8_t i = 0; i < Msg->Size; i++)
   {
-    Serial3.print(Msg->Data[i], HEX);
-    Serial3.write(' ');
+    MYMYSERIAL.print(Msg->Data[i], HEX);
+    MYMYSERIAL.write(' ');
   }
-  Serial3.println();
+  MYMYSERIAL.println();
+  #endif
+
+// 1. Service Mode CV Write (Pattern 0x70)
+  if ((Msg->Data[0] & 0xF0) == 0x70)
+   {
+    uint16_t cv = (((Msg->Data[0] & 0x03) << 8) | Msg->Data[1]) + 1;
+    uint8_t val = Msg->Data[2];
+    Dcc.setCV(cv, val);
+    BaseTurnoutAddress = Dcc.getAddr();
+   }
+
+    // 2. POM (Programming on Main)
+  if (Msg->Size >= 4)
+   {
+    uint16_t msgAddr = ((Msg->Data[0] & 0x3F) | ((Msg->Data[1] & 0x70) << 2)) + 1;
+
+    if (msgAddr == BaseTurnoutAddress)
+     {
+      if ((Msg->Data[1] & 0xF0) == 0xE0)
+       {
+        uint16_t cv = (((Msg->Data[1] & 0x07) << 8) | Msg->Data[2]) + 1;
+        uint8_t val = Msg->Data[3];
+        Dcc.setCV(cv, val);
+        BaseTurnoutAddress = Dcc.getAddr();
+       }
+     }
+   }
  }
-#else
-void notifyDccMsg( DCC_MSG * Msg)
- {
-  Serial.print("notifyDccMsg: ") ;
-  for(uint8_t i = 0; i < Msg->Size; i++)
-  {
-    Serial.print(Msg->Data[i], HEX);
-    Serial.write(' ');
-  }
-  Serial.println();
- }
-#endif
-#endif
+
 #endif
 

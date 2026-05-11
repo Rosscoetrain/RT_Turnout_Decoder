@@ -35,14 +35,14 @@ struct CVPair
  * to use individual CV's for each address output requires two CV's
  * one for the pulse time
  * one for the output state
- * 
+ *
  */
 
 
 /*
  *           address
  *           1    2    3    4    5    6    7    8
- * CV     
+ * CV
  *  pulse   33   35   37   39   41   43   45   47
  *  state   34   36   38   40   42   44   46   48
  */
@@ -51,7 +51,7 @@ struct CVPair
 /*
  * These are stored in an array of CV pairs.
  * Default array is as below
- * 
+ *
  */
 
 
@@ -88,7 +88,7 @@ CVPair FactoryDefaultCVs [] =
 
   {CV_ACCESSORY_DECODER_SERIAL_MSB, uint8_t(SERIAL_NUMBER / 256)},
   {CV_ACCESSORY_DECODER_SERIAL_LSB, uint8_t(SERIAL_NUMBER - ((SERIAL_NUMBER / 256) * 256))},
-  
+
 
 };
 
@@ -96,9 +96,9 @@ CVPair FactoryDefaultCVs [] =
 
 uint8_t FactoryDefaultCVIndex = 0;
 
-// This is the Arduino Pin Mapping to Turnout Addresses with 2 pins per turnout 
+// This is the Arduino Pin Mapping to Turnout Addresses with 2 pins per turnout
 // A1 is missing in the sequence as it is used for the DCC ACK
-// The Pins are defined in Pairs T=Thrown, C=Closed (Digitrax Notation)  
+// The Pins are defined in Pairs T=Thrown, C=Closed (Digitrax Notation)
 //   base address 1C 1T 2C 2T 3C 3T  4C 4T  5C  5T  6C  6T  7C  7T  8C  8T
 #ifdef NANO_SMT_BOARD
 
@@ -189,7 +189,7 @@ uint16_t BaseTurnoutAddress;
 #ifdef LEARNING
 
 //#ifdef ARDUINO_ARCH_ESP32
-//int LEARNINGBUTTON = 2;    // pin 
+//int LEARNINGBUTTON = 2;    // pin
 //#else
 int LEARNINGBUTTON = A6;    // pin A6
 //#endif
@@ -215,4 +215,4 @@ uint8_t versionBuffer[3];
 
 #endif
 
-  
+

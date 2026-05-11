@@ -89,7 +89,7 @@ uint8_t PinPulser::addPin(uint8_t Pin)
       process();
       return i;
     }
-  }  
+  }
 
 #ifdef DEBUG_MSG
 #ifdef ARDUINO_AVR_ATmega4809
@@ -145,7 +145,7 @@ PP_State PinPulser::process(void)
       state = PP_OUTPUT_ON_DELAY;
     }
     break;
-      
+
   case PP_OUTPUT_ON_DELAY:
     now = millis();
     if(now >= targetMs)
@@ -278,4 +278,4 @@ uint8_t PinPulser::getActiveOutputState(uint8_t pin)
 
 #endif
 
-  
+

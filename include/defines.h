@@ -60,10 +60,10 @@
 #define LEARNING
 
 
-// Un-Comment the lines below to Enable DCC ACK for Service Mode Programming Read CV Capablilty 
+// Un-Comment the lines below to Enable DCC ACK for Service Mode Programming Read CV Capablilty
 
 #ifdef ARDUINO_ARCH_ESP32
-#define ENABLE_DCC_ACK  23  // This is IO23 on ESP32 WROOM   
+#define ENABLE_DCC_ACK  23  // This is IO23 on ESP32 WROOM
 #else
 #ifdef ARDUINO_AVR_ATmega4809
 #define ENABLE_DCC_ACK  26  // TODO CONFIRM THIS ON PCB LAYOUT
@@ -85,7 +85,7 @@
 //
 //#define SINGLE_PULSE
 
-// Define the Arduino input Pin number for the DCC Signal 
+// Define the Arduino input Pin number for the DCC Signal
 #ifdef ARDUINO_ARCH_ESP32
 #define DCC_PIN     22
 #else
@@ -93,7 +93,7 @@
 #endif
 
 #define NUM_TURNOUTS 8                // Set Number of Turnouts (Pairs of Pins)
-#define ACTIVE_OUTPUT_STATE HIGH      // Set the ACTIVE State of the output to Drive the Turnout motor electronics HIGH or LOW 
+#define ACTIVE_OUTPUT_STATE HIGH      // Set the ACTIVE State of the output to Drive the Turnout motor electronics HIGH or LOW
 
 #define DEFAULT_PULSE 10              // the default pulse ms/10
 
@@ -113,15 +113,15 @@
 
 
 
-// To set the Turnout Addresses for this board you need to change the CV values for CV1 (CV_ACCESSORY_DECODER_ADDRESS_LSB) and 
-// CV9 (CV_ACCESSORY_DECODER_ADDRESS_MSB) in the FactoryDefaultCVs structure below. The Turnout Addresses are defined as: 
-// Base Turnout Address is: ((((CV9 * 64) + CV1) - 1) * 4) + 1 
+// To set the Turnout Addresses for this board you need to change the CV values for CV1 (CV_ACCESSORY_DECODER_ADDRESS_LSB) and
+// CV9 (CV_ACCESSORY_DECODER_ADDRESS_MSB) in the FactoryDefaultCVs structure below. The Turnout Addresses are defined as:
+// Base Turnout Address is: ((((CV9 * 64) + CV1) - 1) * 4) + 1
 // With NUM_TURNOUTS 8 (above) a CV1 = 1 and CV9 = 0, the Turnout Addresses will be 1..8, for CV1 = 2 the Turnout Address is 5..12
 
 
 #define CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME 2  // CV for the Output Pulse ON ms
 #define CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME 3  // CV for the delay in ms to allow a CDU to recharge
-#define CV_ACCESSORY_DECODER_ACTIVE_STATE      4  // CV to define the ON Output State 
+#define CV_ACCESSORY_DECODER_ACTIVE_STATE      4  // CV to define the ON Output State
 
 #ifdef ARDUINO_AVR_ATmega4809
 #define CV_ACCESSORY_DECODER_SERIAL_LSB 254       // lsb for board serial number  note ATmega4809 has only 256 bytes of eeprom
@@ -133,5 +133,5 @@
 
 #endif
 
-  
-  
+
+
