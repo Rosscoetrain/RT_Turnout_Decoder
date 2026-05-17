@@ -177,6 +177,61 @@ byte outputs[] = { 3, 4, 5, 6, 7, 8, 12, 11, 10, 9, 13, 14, 16, 17, 18, 19};
 
 //#endif
 
+
+
+#ifdef STM32F1xx
+//   base address  1C   1T   2C   2T   3C   3T   4C   4T   5C   5T   6C   6T   7C   7T   8C   8T
+byte outputs[] = { PC13,PC14,PC15,PA0, PA1, PA2, PA4, PA3, PA6, PA5, PB0, PA7, PB10,PB1, PB9, PB11};
+//   pins          PC13 PC14 PC15 PA0  PA1  PA2  PA4  PA3  PA6  PA5  PB0  PA7  PB10 PB1  PB9  PB11 
+//                   32   33   34   0    1    2    4    3    6    5   16    7    26  17   25    27
+#endif
+
+
+/*
+STM32F103C8T6 Bluepill EX-IOExpander pin map at Vpin 800
+
+
+Vpin  Pin   Digital  Analogue  PWM       Output
+800   PC13  Y        N         N
+801   PC14  Y        N         N
+802   PA15  Y        N         N
+803   PA0   Y        Y         N
+804   PA1   Y        Y         Y
+805   PA2   Y        Y         Y
+806   PA3   Y        Y         Y
+807   PA4   Y        Y         N
+808   PA5   Y        Y         N
+809   PA6   Y        Y         Y
+810   PA7   Y        Y         Y
+811   PB0   Y        Y         Y
+812   PB1   Y        Y         Y
+813   PB10  Y        N         Y
+814   PB11  Y        N         Y
+815   PB9   Y        N         N
+816   PB8   Y        N         N
+817   PB5   Y        N         Y
+818   PB4   Y        N         Y
+819   PB3   Y        N         Y
+820   PA15  Y        N         Y
+821   PA10  Y        N         Y
+822   PA9   Y        N         Y
+823   PA8   Y        N         Y
+824   PB15  Y        N         Y
+825   PB14  Y        N         Y
+826   PB13  Y        N         Y
+827   PB12  Y        N         N
+
+
+*/
+
+
+
+
+
+
+
+
+
 NmraDcc  Dcc ;
 DCC_MSG  Packet ;
 PinPulser pinPulser;
