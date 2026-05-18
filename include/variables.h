@@ -183,12 +183,11 @@ byte outputs[] = { 3, 4, 5, 6, 7, 8, 12, 11, 10, 9, 13, 14, 16, 17, 18, 19};
 //   base address  1C   1T   2C   2T   3C   3T   4C   4T   5C   5T   6C   6T   7C   7T   8C   8T
 byte outputs[] = { PC13,PC14,PC15,PA0, PA1, PA2, PA4, PA3, PA6, PA5, PB0, PA7, PB10,PB1, PB9, PB11};
 //   pins          PC13 PC14 PC15 PA0  PA1  PA2  PA4  PA3  PA6  PA5  PB0  PA7  PB10 PB1  PB9  PB11 
-//                   32   33   34   0    1    2    4    3    6    5   16    7    26  17   25    27
-
+//                 32   33   34   0    1    2    4    3    6    5   16    7    26  17   25    27
 //   net           AD3  AD4  AD5  AD6  AD7  AD8  AD10 AD9  AD12 AD11 AD14 AD13 AD16 AD15 AD18 AD17
 
-//#define I2C_SDA PB7
-//#define I2C_SCL PB6
+#define I2C_SDA PB7
+#define I2C_SCL PB6
 #endif
 
 
@@ -199,8 +198,8 @@ byte outputs[] = { PB0, PB1, PA5, PA7, PA3, PA1, PA2, PA0, PA6, PA4, PB11,PA2, P
 //                 16   17   5    7    3    1    2    0    6    4   27    2             
 //   net           AD3  AD4  AD5  AD6  AD7  AD8  AD10 AD9  AD12 AD11 AD14 AD13 AD16 AD15 AD18 AD17
 
-//#define I2C_SDA PB7
-//#define I2C_SCL PB6
+#define I2C_SDA PB7
+#define I2C_SCL PB6
 #endif
 
 
