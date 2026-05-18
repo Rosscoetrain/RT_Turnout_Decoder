@@ -62,6 +62,13 @@ void setup()
   pinMode(ENABLE_DCC_ACK, OUTPUT);
 #endif
 
+#ifdef LEARNING
+#ifdef STM32F1xx
+  pinMode(LEARNINGBUTTON, INPUT);
+#else
+#endif
+#endif
+
   // Call the main DCC Init function to enable the DCC Receiver
   Dcc.init( MAN_ID_DIY, DCC_DECODER_VERSION_NUM, FLAGS_OUTPUT_ADDRESS_MODE | FLAGS_DCC_ACCESSORY_DECODER, 0 );
 
@@ -131,7 +138,11 @@ void loop()
 
 #ifdef LEARNING
 
+#ifdef STM32F1xx
+  learningbuttonVal = digitalRead(LEARNINGBUTTON);
+#else
   learningbuttonVal = dr(LEARNINGBUTTON);
+#endif
 
   if (learningbuttonOldval != learningbuttonVal)
    {

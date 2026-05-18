@@ -688,8 +688,8 @@ void notifyCVAck(void)
   #ifdef DEBUG_MSG
   MYSERIAL.println("notifyCVAck") ;
   #endif
-  // Configure the DCC CV Programing ACK pin for an output
-  pinMode( ENABLE_DCC_ACK, OUTPUT );
+  // Configure the DCC CV Programing ACK pin for an output  // TODO move this to setup
+//  pinMode( ENABLE_DCC_ACK, OUTPUT );
   // Generate the DCC ACK 60mA pulse
   digitalWrite( ENABLE_DCC_ACK, HIGH );
   delay( 10 );  // The DCC Spec says 6ms but 10 makes sure... ;)

@@ -58,11 +58,26 @@
 
 // Un-Comment the line below to include learning function
 #define LEARNING
+#ifdef LEARNING
+#ifdef STM32F1xx
+#define LEARNINGBUTTON PB13
+#else
+#define LEARNINGBUTTON A6
+#endif
+#endif
+
 
 
 // Un-Comment the lines below to Enable DCC ACK for Service Mode Programming Read CV Capablilty
 
+#ifdef STM32F1xx
+#define ENABLE_DCC_ACK  PB12
+#else
 #define ENABLE_DCC_ACK  15  // This is A1 on the Iowa Scaled Engineering ARD-DCCSHIELD DCC Shield
+#endif
+
+// TODO need to define DCC_ACK pin for different processors.
+
 
 
 // Un-Comment the line below to use a single output pulse time.
@@ -71,7 +86,13 @@
 //#define SINGLE_PULSE
 
 // Define the Arduino input Pin number for the DCC Signal
+
+#ifdef STM32F1xx
+#define DCC_PIN     PA8
+#else
 #define DCC_PIN     2
+#endif
+
 
 #define NUM_TURNOUTS 8                // Set Number of Turnouts (Pairs of Pins)
 #define ACTIVE_OUTPUT_STATE HIGH      // Set the ACTIVE State of the output to Drive the Turnout motor electronics HIGH or LOW
