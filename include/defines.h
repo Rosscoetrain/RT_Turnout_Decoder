@@ -30,8 +30,6 @@
 #define SERIAL_NUMBER 45
 
 
-
-
 // Un-Comment the line below to force CVs to be written to the Factory Default values
 // defined in the FactoryDefaultCVs below on Start-Up
 // THIS NEEDS to be un-commented and uploaded once to setup the eeprom

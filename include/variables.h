@@ -119,35 +119,6 @@ byte outputs[] = { 3, 4, 5, 6, 7, 8, 12, 11, 10, 9, 13, 14, 16, 17, 18, 19};
 
 #endif
 
-//#elif defined(ATMEGA328P_SMT_BOARD)
-
-//#warning "Building for ATMEGA328P SMT Board"
-// this is the ATMega328p TQFP-32 Pin Mapping to Turnout Addresses
-
-//   base address  1C  1T  2C  2T  3C  3T  4C  4T  5C  5T  6C  6T  7C  7T  8C  8T
-//byte outputs[] = {  6,  5,  8,  7, 10,  9, 12, 11, 13, 14, 17, 16, 19, 18,  4,  3};
-//   pins          D6  D5  D8  D7 D10  D9 D12 D11 D13  A0  A3  A2  A5  A4  D4  D3
-
-//#elif defined(ATMEGA328P_SMT_BOARD_KATO)
-
-//#warning "Building for ATMEGA328P SMT Board Kato"
-// this is the ATMega328p TQFP-32 Pin Mapping to Turnout Addresses
-
-//   base address  1C  1T  2C  2T  3C  3T  4C  4T  5C  5T  6C  6T  7C  7T  8C  8T
-//byte outputs[] = {  6,  5,  8,  7, 10,  9, 12, 11, 14, 13, 17, 16, 19, 18,  4,  3};
-//   pins          D6  D5  D8  D7 D10  D9 D12 D11  A0 D13  A3  A2  A5  A4  D4  D3
-
-//#elif defined(ARDUINO_AVR_ATmega4809)
-
-//#warning "Building for ATmega4809 SMT Board"
-
-// this is the ATMega4809 Pin Mapping to Turnout Addresses
-
-//TODO work out pin mapping based on pcb when developed.  Use 328p for now.
-
-//   base address  1C  1T  2C  2T  3C  3T  4C  4T  5C  5T  6C  6T  7C  7T  8C  8T
-//byte outputs[] = {  6,  5,  8,  7, 10,  9, 12, 11, 14, 13, 17, 16, 19, 18,  4,  3};
-//   pins          D6  D5  D8  D7 D10  D9 D12 D11  A0 D13  A3  A2  A5  A4  D4  D3
 
 //#elif defined(ARDUINO_ARCH_ESP32)
 
@@ -186,6 +157,7 @@ byte outputs[] = { PC13,PC14,PC15,PA0, PA1, PA2, PA4, PA3, PA6, PA5, PB0, PA7, P
 //                 32   33   34   0    1    2    4    3    6    5   16    7    26  17   25    27
 //   net           AD3  AD4  AD5  AD6  AD7  AD8  AD10 AD9  AD12 AD11 AD14 AD13 AD16 AD15 AD18 AD17
 
+uint16_t vpins[] = {   800,      801,      802,      803,      804,      805,      806,      807 };
 #define I2C_SDA PB7
 #define I2C_SCL PB6
 #endif
@@ -197,6 +169,7 @@ byte outputs[] = { PB0, PB1, PA5, PA7, PA3, PA1, PA2, PA0, PA6, PA4, PB11,PA2, P
 //   pins          PB0  PB1  PA5  PA7  PA3  PA1  PA2  PA0  PA6  PA4  PB11 PA2  PB5  PB15 PA9  PB3 
 //                 16   17   5    7    3    1    2    0    6    4   27    2             
 //   net           AD3  AD4  AD5  AD6  AD7  AD8  AD10 AD9  AD12 AD11 AD14 AD13 AD16 AD15 AD18 AD17
+uint16_t vpins[] = {   800,      801,      802,      803,      804,      805,      806,      807 };
 
 #define I2C_SDA PB7
 #define I2C_SCL PB6
