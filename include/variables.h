@@ -158,8 +158,10 @@ byte outputs[] = { PC13,PC14,PC15,PA0, PA1, PA2, PA4, PA3, PA6, PA5, PB0, PA7, P
 //   net           AD3  AD4  AD5  AD6  AD7  AD8  AD10 AD9  AD12 AD11 AD14 AD13 AD16 AD15 AD18 AD17
 
 uint16_t vpins[] = {   800,      801,      802,      803,      804,      805,      806,      807 };
-#define I2C_SDA PB7
-#define I2C_SCL PB6
+
+//#define I2C_CONTROL PB4
+//#define I2C_SDA PB7
+//#define I2C_SCL PB6
 #endif
 
 
@@ -171,8 +173,9 @@ byte outputs[] = { PB0, PB1, PA5, PA7, PA3, PA1, PA2, PA0, PA6, PA4, PB11,PA2, P
 //   net           AD3  AD4  AD5  AD6  AD7  AD8  AD10 AD9  AD12 AD11 AD14 AD13 AD16 AD15 AD18 AD17
 uint16_t vpins[] = {   800,      801,      802,      803,      804,      805,      806,      807 };
 
-#define I2C_SDA PB7
-#define I2C_SCL PB6
+//#define I2C_CONTROL PB4
+//#define I2C_SDA PB7
+//#define I2C_SCL PB6
 #endif
 
 
@@ -250,6 +253,9 @@ String readString;
 char* version;
 uint8_t versionBuffer[3];
 
+
+// this is for STM32F1xx versions but here for all as will affect control of DCC.
+bool i2cControl = false;
 
 #endif
 

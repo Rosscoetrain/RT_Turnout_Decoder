@@ -21,6 +21,11 @@
 
 #include "defines.h"
 
+// need EEPROM if using I2C control for i2c address storage
+#if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
+#include <EEPROM.h>
+#include <Wire.h>
+#endif
 
 #include <NmraDcc.h>
 #include "PinPulser.h"
@@ -35,6 +40,9 @@
 
 #include "functions.h"
 
+#if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
+#include "EXIO/i2c_functions.h"
+#endif
 
 
 void setup()
@@ -48,29 +56,73 @@ void setup()
 
   setVersion();
 
+  // on STM32F1xx boards check if we are connecting via I2C or DCC
+  // DCC i2cControl = FALSE
+  // I2C i2cControl = TRUE
+  // set jumper at PB4 on these boards.
+
+#if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
+  disableJTAG();
+  pinMode(I2C_CONTROL, INPUT_PULLUP);
+  i2cControl = digitalRead(I2C_CONTROL);
+#endif
+
   // Setup which External Interrupt, the Pin it's associated with that we're using and enable the Pull-Up
   // Many Arduino Cores now support the digitalPinToInterrupt() function that makes it easier to figure out the
   // Interrupt Number for the Arduino Pin number, which reduces confusion.
 
+  if (!i2cControl)
+   {
 #ifdef digitalPinToInterrupt
-  Dcc.pin(DCC_PIN, 0);
+    Dcc.pin(DCC_PIN, 0);
 #else
-  Dcc.pin(0, DCC_PIN, 1);
+    Dcc.pin(0, DCC_PIN, 1);
 #endif
 
 #ifdef ENABLE_DCC_ACK
-  pinMode(ENABLE_DCC_ACK, OUTPUT);
+    pinMode(ENABLE_DCC_ACK, OUTPUT);
 #endif
 
 #ifdef LEARNING
-#ifdef STM32F1xx
-  pinMode(LEARNINGBUTTON, INPUT);
-#else
-#endif
+    pinMode(LEARNINGBUTTON, INPUT);
 #endif
 
-  // Call the main DCC Init function to enable the DCC Receiver
-  Dcc.init( MAN_ID_DIY, DCC_DECODER_VERSION_NUM, FLAGS_OUTPUT_ADDRESS_MODE | FLAGS_DCC_ACCESSORY_DECODER, 0 );
+// Call the main DCC Init function to enable the DCC Receiver
+    Dcc.init( MAN_ID_DIY, DCC_DECODER_VERSION_NUM, FLAGS_OUTPUT_ADDRESS_MODE | FLAGS_DCC_ACCESSORY_DECODER, 0 );
+   }
+
+#if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
+  else
+   {
+// setup I2C control
+    if (getI2CAddress() != 0)
+     {
+      i2cAddress = getI2CAddress();
+     }
+    if (i2cAddress < 0x08 || i2cAddress > 0x77)
+     {
+      MYSERIAL.print(F("ERROR: Invalid I2C address configured: 0x"));
+      MYSERIAL.print(i2cAddress, HEX);
+      MYSERIAL.println(F(", using default instead"));
+      i2cAddress = I2C_ADDRESS;
+     }
+    MYSERIAL.print(F("Available at I2C address 0x"));
+    MYSERIAL.println(i2cAddress, HEX);
+
+    Wire.begin(i2cAddress);
+// disable I2C pullups internally
+    digitalWrite(I2C_SDA, LOW);
+    digitalWrite(I2C_SCL, LOW);
+
+    Wire.onReceive(receiveEvent);
+    Wire.onRequest(requestEvent);
+
+    
+
+
+   }
+#endif  // STM32F1xx
+
 
 #ifdef ENABLE_SERIAL
 #ifdef KATO_SMT_BOARD

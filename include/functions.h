@@ -38,6 +38,47 @@ bool dr (int pin)
  }
 
 
+#if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
+
+/*
+Disabling JTAG is required to avoid pin conflicts on Bluepill
+*/
+
+
+void disableJTAG()
+ {
+  // Disable JTAG and enable SWD by clearing the SWJ_CFG bits
+  // Assuming the register is named AFIO_MAPR or AFIO_MAPR2
+  AFIO->MAPR &= ~(AFIO_MAPR_SWJ_CFG);
+  // or
+  // AFIO->MAPR2 &= ~(AFIO_MAPR2_SWJ_CFG);
+ }
+
+
+/*
+* Function to read I2C address from EEPROM
+* address at 0
+*
+* TODO add validation
+*
+*/
+uint8_t getI2CAddress()
+ {
+  uint8_t eepromAddress;
+
+  byte ee = EEPROM.read(0);
+
+  if ((ee == 0) || (ee == 255))
+   {
+    EEPROM.write(0, I2C_ADDRESS);
+    delay(50);
+   }
+  eepromAddress = EEPROM.read(0);
+  return eepromAddress;
+ }
+
+#endif
+
 /*
  * setup the version number
  */
@@ -54,7 +95,6 @@ void setVersion() {
   version = strtok(NULL, ".");
   versionBuffer[2] = atoi(version);  // Patch last
 }
-
 
 /**
  * this is just a function to show via the onboard PCB led, the state of the decoder
@@ -734,7 +774,7 @@ void notifyDccMsg(DCC_MSG *Msg)
      {
       if ((Msg->Data[1] & 0xF0) == 0xE0)
        {
-        uint16_t cv = ((Msg->Data[1] & 0x03) << 8) | Msg->Data[2] + 1;
+        uint16_t cv = (((Msg->Data[1] & 0x03) << 8) | Msg->Data[2]) + 1;
         uint8_t val = Msg->Data[3];
 #ifdef NOTIFY_DCC_MSG
         MYSERIAL.print("CV : ");

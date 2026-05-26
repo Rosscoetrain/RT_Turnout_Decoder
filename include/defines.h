@@ -115,6 +115,16 @@
 #define CV_ACCESSORY_DECODER_SERIAL_LSB 255       // lsb for board serial number
 #define CV_ACCESSORY_DECODER_SERIAL_MSB 256       // msb for board serial number
 
+#if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
+
+#define I2C_ADDRESS 0x65
+
+#define I2C_CONTROL PB4
+#define I2C_SDA PB7
+#define I2C_SCL PB6
+#endif
+
+
 #endif
 
 
