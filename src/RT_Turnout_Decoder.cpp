@@ -23,7 +23,17 @@
 
 // need EEPROM if using I2C control for i2c address storage
 #if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
-#include <EEPROM.h>
+
+// Use 0-2. Larger for more debugging messages
+#define FLASH_DEBUG      2
+
+// You can select another sector. Be careful not larger than (REGISTERED_NUMBER_FLASH_SECTORS - 1) and large enough not to overwrite your program
+// Default is (REGISTERED_NUMBER_FLASH_SECTORS - 1) if you don't specify here
+#define USING_FLASH_SECTOR_NUMBER           (REGISTERED_NUMBER_FLASH_SECTORS - 2)
+
+// To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
+#include "FlashStorage_STM32F1.h"
+
 #include <Wire.h>
 #endif
 
@@ -50,7 +60,7 @@ void setup()
 #ifdef ENABLE_SERIAL
   MYSERIAL.begin(115200);
   uint8_t maxWaitLoops = 255;
-  while(!Serial && maxWaitLoops--)
+  while(!MYSERIAL && maxWaitLoops--)
     delay(20);
 #endif
 
@@ -64,7 +74,9 @@ void setup()
 #if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
   disableJTAG();
   pinMode(I2C_CONTROL, INPUT_PULLUP);
-  i2cControl = digitalRead(I2C_CONTROL);
+//  i2cControl = digitalRead(I2C_CONTROL);
+  i2cControl = false;
+//  EEPROM.init();
 #endif
 
   // Setup which External Interrupt, the Pin it's associated with that we're using and enable the Pull-Up

@@ -27,7 +27,7 @@
 
 #warning "Have you set the serial number"
 
-#define SERIAL_NUMBER 45
+#define SERIAL_NUMBER 46
 
 
 // Un-Comment the line below to force CVs to be written to the Factory Default values

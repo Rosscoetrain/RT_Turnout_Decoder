@@ -62,8 +62,10 @@ void disableJTAG()
 * TODO add validation
 *
 */
+
 uint8_t getI2CAddress()
  {
+/*
   uint8_t eepromAddress;
 
   byte ee = EEPROM.read(0);
@@ -75,6 +77,8 @@ uint8_t getI2CAddress()
    }
   eepromAddress = EEPROM.read(0);
   return eepromAddress;
+*/
+  return 0;
  }
 
 #endif
@@ -697,8 +701,27 @@ void notifyDccAccTurnoutOutput( uint16_t Addr, uint8_t Direction, uint8_t Output
  }
 
 
+// Callback for when the command station requests a CV read
+uint8_t notifyCVRead(uint16_t CV) {
+  return EEPROM.read(CV);
+}
+
+
 void notifyCVChange(uint16_t CV, uint8_t Value)
  {
+
+#if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
+  if (EEPROM.read(CV != Value))
+   {
+    EEPROM.write(CV, Value);
+    Serial.print("CV Written: ");
+    Serial.print(CV);
+    Serial.print(" = ");
+    Serial.println(Value);
+    EEPROM.commit();
+   }
+#endif
+
 #ifdef DEBUG_MSG
   MYSERIAL.print("notifyCVChange: CV: ") ;
   MYSERIAL.print(CV,DEC) ;
