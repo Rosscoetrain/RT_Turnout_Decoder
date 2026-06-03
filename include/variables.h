@@ -69,6 +69,7 @@ CVPair FactoryDefaultCVs [] =
   {CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME, 50},   // x 10mS for the output pulse duration
   {CV_ACCESSORY_DECODER_ACTIVE_STATE,    ACTIVE_OUTPUT_STATE},
 #else
+  {CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME, 10},   // x this for the output pulse duration
   {33, DEFAULT_PULSE},
   {34, ACTIVE_OUTPUT_STATE},
   {35, DEFAULT_PULSE},

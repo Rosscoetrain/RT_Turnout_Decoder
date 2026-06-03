@@ -596,7 +596,7 @@ void initPinPulser(void)
 // read the CV's for each address
   for(uint8_t i = 0; i < NUM_TURNOUTS; i++)
   {
-    onMs[i] = Dcc.getCV( 33 + ( i * 2 ) ) * 10;
+    onMs[i] = Dcc.getCV( 33 + ( i * 2 ) ) * Dcc.getCV(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME);
     activeOutputState[i]  = Dcc.getCV( 34 + ( i * 2 ) );
   #ifdef DEBUG_MSG
     MYSERIAL.print(F(" i : "));
@@ -703,7 +703,9 @@ void notifyDccAccTurnoutOutput( uint16_t Addr, uint8_t Direction, uint8_t Output
 
 // Callback for when the command station requests a CV read
 uint8_t notifyCVRead(uint16_t CV) {
+#if defined(STM32F1xx_Blue_Pill) || defined(STM32F1xx_Stumpy)
   return EEPROM.read(CV);
+#endif
 }
 
 
