@@ -27,7 +27,7 @@
 
 #warning "Have you set the serial number"
 
-#define SERIAL_NUMBER 46
+#define SERIAL_NUMBER 47
 
 
 // Un-Comment the line below to force CVs to be written to the Factory Default values
@@ -45,13 +45,16 @@
 #define MYSERIAL Serial
 
 // You can print every DCC packet by un-commenting the line below (except for idle and service mode reset)
-//#define NOTIFY_DCC_MSG
+#define NOTIFY_DCC_MSG
 
 // You can print every notifyDccAccTurnoutOutput call-back by un-commenting the line below
 //#define NOTIFY_TURNOUT_MSG
 
 // You can also print other Debug Messages uncommenting the line below
 //#define DEBUG_MSG
+
+
+
 #endif    // ENABLE_SERIAL
 
 // Un-Comment the line below to include learning function
@@ -103,14 +106,24 @@
 
 #define LEDCONTROL LED_BUILTIN
 
-// To set the Turnout Addresses for this board you need to change the CV values for CV1 (CV_ACCESSORY_DECODER_ADDRESS_LSB) and
-// CV9 (CV_ACCESSORY_DECODER_ADDRESS_MSB) in the FactoryDefaultCVs structure below. The Turnout Addresses are defined as:
-// Base Turnout Address is: ((((CV9 * 64) + CV1) - 1) * 4) + 1
-// With NUM_TURNOUTS 8 (above) a CV1 = 1 and CV9 = 0, the Turnout Addresses will be 1..8, for CV1 = 2 the Turnout Address is 5..12
 
 #define CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME 2  // CV for the Output Pulse ON ms
 #define CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME 3  // CV for the delay in ms to allow a CDU to recharge
 #define CV_ACCESSORY_DECODER_ACTIVE_STATE      4  // CV to define the ON Output State
+
+#define CVS_PER_TURNOUT 2
+
+#define CV_USER_GROUP_1 33                        // CV  33 -  81   maximum  48 CVs
+#define CV_USER_GROUP_2 112                       // CV 112 - 128   maximum  16 CVs
+#define CV_USER_GROUP_3 129                       // CV 129 - 256   maximum 127 CVs
+#define CV_USER_GROUP_4 513                       // CV 513 - 895   maximum 382 CVs
+
+#define CV_MAX_TURNOUTS (CV_USER_GROUP_1 + NUM_TURNOUTS * CVS_PER_TURNOUT)
+
+
+#define CV_USER_GROUP CV_USER_GROUP_1
+
+
 
 #define CV_ACCESSORY_DECODER_SERIAL_LSB 255       // lsb for board serial number
 #define CV_ACCESSORY_DECODER_SERIAL_MSB 256       // msb for board serial number

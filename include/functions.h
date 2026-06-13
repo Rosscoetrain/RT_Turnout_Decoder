@@ -180,6 +180,10 @@ void serialCommandH2()  // actually <>
   MYSERIAL.print(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME);
   MYSERIAL.print(F(" = "));
   MYSERIAL.println(Dcc.getCV(CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME));
+  MYSERIAL.print(F("CV"));
+  MYSERIAL.print(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME);
+  MYSERIAL.print(F(" = "));
+  MYSERIAL.println(Dcc.getCV(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME));
 
 #ifdef SINGLE_PULSE
   MYSERIAL.print(F("CV"));
@@ -501,7 +505,7 @@ if (readString == "<Z>")
           serialCommandD();
          }
 
-/*
+
         if (readString.startsWith("<W"))
          {
           StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
@@ -513,6 +517,7 @@ if (readString == "<Z>")
             int value = splitter->getItemAtIndex(2).toInt();
 
             switch (addr) {
+/*
               case CV_ACCESSORY_DECODER_ADDRESS_LSB:                  // CV1
 
                     byte L = (value + 3) / 4;
@@ -530,7 +535,7 @@ if (readString == "<Z>")
               case CV_ACCESSORY_DECODER_ADDRESS_MSB:                  // CV9
                   Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_MSB, value);
               break;
-
+*/
               case 8:
                 if (value == 8)
                  {
@@ -542,6 +547,7 @@ if (readString == "<Z>")
                   Dcc.setCV(CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME, value);
                  }
               break;
+/*
               case CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME:
                 if ((value >= 0) && (value <= 255))
                  {
@@ -558,6 +564,7 @@ if (readString == "<Z>")
                   MYSERIAL.println(F("Value must be 0 (LOW) or 1 (HIGH)"));
                  }
               break;
+*/
               default:
                  MYSERIAL.println(F("Invalid cv number: should be <W cv value> "));
               break;
@@ -570,7 +577,7 @@ if (readString == "<Z>")
           delete splitter;
           splitter = NULL;
          }
-*/
+
        }
       else
        {
@@ -643,181 +650,6 @@ void initPinPulser(void)
 }
 
 
-/*
- *  DCC functions
-*/
-
-
-// This function is called whenever a normal DCC Turnout Packet is received
-void notifyDccAccTurnoutOutput( uint16_t Addr, uint8_t Direction, uint8_t OutputPower )
- {
-#ifdef  NOTIFY_TURNOUT_MSG
-  MYSERIAL.print("notifyDccAccTurnoutOutput: Turnout: ") ;
-  MYSERIAL.print(Addr,DEC) ;
-  MYSERIAL.print(" Direction: ");
-  MYSERIAL.print(Direction ? "Thrown" : "Closed") ;
-  MYSERIAL.print(" Output: ");
-  MYSERIAL.print(OutputPower ? "On" : "Off") ;
-#endif
-
-// check to see if in learning mode and update address
-
-#ifdef LEARNING
-  if (learningMode == HIGH) {
-
-//    int H = (Addr - 1) / 64;
-//    int L = Addr - (H * 64);
-    byte L = (Addr + 3) / 4;
-    byte H = (Addr + 3) / 1024;
-
-  #ifdef DEBUG_MSG
-    MYSERIAL.println("");
-    MYSERIAL.print(F("Value = ")); MYSERIAL.println(Addr,DEC);
-    MYSERIAL.print(F(" H = ")); MYSERIAL.println(H,DEC);
-    MYSERIAL.print(F(" L = ")); MYSERIAL.println(L,DEC);
-  #endif
-    Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_MSB, H);
-    Dcc.setCV(CV_ACCESSORY_DECODER_ADDRESS_LSB, L);
-   }
-  else
-#endif
-
-   {
-    if(( Addr >= BaseTurnoutAddress ) && ( Addr < (BaseTurnoutAddress + NUM_TURNOUTS )) && OutputPower )
-     {
-      uint16_t pinIndex = ( (Addr - BaseTurnoutAddress) << 1 ) + Direction ;
-      pinPulser.addPin(outputs[pinIndex]);
-#ifdef  NOTIFY_TURNOUT_MSG
-      MYSERIAL.print(" Pin Index: ");
-      MYSERIAL.print(pinIndex,DEC);
-      MYSERIAL.print(" Pin: ");
-      MYSERIAL.print(outputs[pinIndex],DEC);
-#endif
-     }
-   }
-#ifdef  NOTIFY_TURNOUT_MSG
-  MYSERIAL.println();
-#endif
- }
-
-
-// Callback for when the command station requests a CV read
-uint8_t notifyCVRead(uint16_t CV) {
-#if defined(STM32F1xx_Blue_Pill) || defined(STM32F1xx_Stumpy)
-  return EEPROM.read(CV);
-#endif
-}
-
-
-void notifyCVChange(uint16_t CV, uint8_t Value)
- {
-
-#if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
-  if (EEPROM.read(CV != Value))
-   {
-    EEPROM.write(CV, Value);
-    Serial.print("CV Written: ");
-    Serial.print(CV);
-    Serial.print(" = ");
-    Serial.println(Value);
-    EEPROM.commit();
-   }
-#endif
-
-#ifdef DEBUG_MSG
-  MYSERIAL.print("notifyCVChange: CV: ") ;
-  MYSERIAL.print(CV,DEC) ;
-  MYSERIAL.print(" Value: ") ;
-  MYSERIAL.println(Value, DEC) ;
-#endif
-
-  Value = Value;  // Silence Compiler Warnings...
-
-  if((CV == CV_ACCESSORY_DECODER_ADDRESS_MSB) || (CV == CV_ACCESSORY_DECODER_ADDRESS_LSB) ||
-		 (CV == CV_ACCESSORY_DECODER_OUTPUT_PULSE_TIME) || (CV == CV_ACCESSORY_DECODER_CDU_RECHARGE_TIME) || (CV == CV_ACCESSORY_DECODER_ACTIVE_STATE))
-		initPinPulser();	// Some CV we care about changed so re-init the PinPulser with the new CV settings
- }
-
-void notifyCVResetFactoryDefault()
-{
-  // Make FactoryDefaultCVIndex non-zero and equal to num CV's to be reset
-  // to flag to the loop() function that a reset to Factory Defaults needs to be done
-  FactoryDefaultCVIndex = sizeof(FactoryDefaultCVs)/sizeof(CVPair);
-};
-
-// This function is called by the NmraDcc library when a DCC ACK needs to be sent
-// Calling this function should cause an increased 60ma current drain on the power supply for 6ms to ACK a CV Read
-#ifdef  ENABLE_DCC_ACK
-void notifyCVAck(void)
- {
-  #ifdef DEBUG_MSG
-  MYSERIAL.println("notifyCVAck") ;
-  #endif
-  // Configure the DCC CV Programing ACK pin for an output  // TODO move this to setup
-//  pinMode( ENABLE_DCC_ACK, OUTPUT );
-  // Generate the DCC ACK 60mA pulse
-  digitalWrite( ENABLE_DCC_ACK, HIGH );
-  delay( 10 );  // The DCC Spec says 6ms but 10 makes sure... ;)
-  digitalWrite( ENABLE_DCC_ACK, LOW );
- }
-#endif
-
-
-
-void notifyDccMsg(DCC_MSG *Msg)
- {
-// ignore idle messages and service mode reset
-
-  if (Msg->Data[0] == 0xFF || Msg->Data[0] == 0x7F || Msg->Data[0] == 0x00)
-   {
-    return;
-   }
-
-  #ifdef NOTIFY_DCC_MSG
-    MYSERIAL.print("notifyDccMsg: ") ;
-    for(uint8_t i = 0; i < Msg->Size; i++)
-     {
-      MYSERIAL.print(Msg->Data[i], HEX);
-      MYSERIAL.write(' ');
-     }
-    MYSERIAL.println();
-  #endif
-
-// 1. Service Mode CV Write (Pattern 0x70)
-  if ((Msg->Data[0] & 0xF0) == 0x70)
-   {
-    uint16_t cv = (((Msg->Data[0] & 0x03) << 8) | Msg->Data[1]) + 1;
-    uint8_t val = Msg->Data[2];
-    Dcc.setCV(cv, val);
-    BaseTurnoutAddress = Dcc.getAddr();
-   }
-
-// 2. POM (Programming on Main) (Pattern 0xE0)
-  if (Msg->Size >= 4)
-   {
-    if (Msg->Data[0] == BaseTurnoutAddress)
-     {
-      if ((Msg->Data[1] & 0xF0) == 0xE0)
-       {
-        uint16_t cv = (((Msg->Data[1] & 0x03) << 8) | Msg->Data[2]) + 1;
-        uint8_t val = Msg->Data[3];
-#ifdef NOTIFY_DCC_MSG
-        MYSERIAL.print("CV : ");
-        MYSERIAL.print(cv);
-        MYSERIAL.print(" value : ");
-        MYSERIAL.println(val);
-#endif
-        if ((cv == 8) && (val == 8))
-         {
-          serialCommandD();
-          return;
-         }
-        Dcc.setCV(cv, val);
-        BaseTurnoutAddress = Dcc.getAddr();
-       }
-     }
-   }
- }
 
 #endif
 

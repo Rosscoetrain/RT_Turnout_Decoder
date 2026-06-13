@@ -37,6 +37,7 @@
 #include <Wire.h>
 #endif
 
+
 #include <NmraDcc.h>
 #include "PinPulser.h"
 
@@ -49,6 +50,7 @@
 #include "variables.h"
 
 #include "functions.h"
+#include "functions_dcc.h"
 
 #if defined (STM32F1xx_Blue_Pill) || defined (STM32F1xx_Stumpy)
 #include "EXIO/i2c_functions.h"
