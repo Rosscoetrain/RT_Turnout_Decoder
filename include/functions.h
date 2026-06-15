@@ -236,6 +236,18 @@ void serialCommandT()
   splitter = NULL;
  }
 
+void serialCommandY()          // test each address throw/colse on 500mS cycle.
+ {
+  for (int a = BaseTurnoutAddress; a < BaseTurnoutAddress + NUM_TURNOUTS; a++)
+   {
+    notifyDccAccTurnoutOutput( a, 1, 1 );
+    delay(500);
+    notifyDccAccTurnoutOutput( a, 0, 1 );
+    delay(500);
+   }
+ }
+
+
 void serialCommandA()
  {
   StringSplitter *splitter = new StringSplitter(readString, ' ', 3);  // new StringSplitter(string_to_split, delimiter, limit)
@@ -503,6 +515,12 @@ if (readString == "<Z>")
 //          MYSERIAL.println(F("Reset factory default CVs"));
 //          notifyCVResetFactoryDefault();
           serialCommandD();
+         }
+
+
+        if (readString.startsWith("<Y>"))    // test each address throw/close 500mS cycle.
+         {
+          serialCommandY();
          }
 
 
